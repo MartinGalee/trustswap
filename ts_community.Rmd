@@ -83,3 +83,49 @@ data %>%
   kable_styling("striped") %>% 
   scroll_box(width = "100%")
 ```
+
+## What happens if a DASH = 2000 would be sufficient to KYC for a launchpad project?
+
+```{r}
+# number of with a DASH equal or greater than 2000 
+n = sum(data$DASH >= 2000)
+cat("Number of people with a DASH of at least 2000: ", n)
+```
+
+```{r echo=FALSE}
+slots = n
+data <-
+  SwapScore_data %>% 
+  inner_join(DASH_data, by = "Address") %>% 
+  mutate(HybridScore = SwapScore * DASH) %>% 
+  arrange(-SwapScore) %>% 
+  mutate(Srank = rank(-SwapScore),
+         Drank = rank(-DASH),
+         Hrank = rank(-HybridScore)) %>% 
+  mutate(Swins = as.numeric(SwapScore / sum(SwapScore) * slots),
+         Dwins = as.numeric(Drank <= slots),
+         Hwins = as.numeric(HybridScore / sum(HybridScore) * slots)) %>% 
+  mutate(cSwins =cumsum(Swins),
+         cDwins =cumsum(Dwins),
+         cHwins =cumsum(Hwins))
+
+# Show data in a table
+data %>% 
+  select(Address, 
+         SwapScore,
+         Srank,
+         Swins,
+         cSwins,
+         DASH,
+         Drank, 
+         Dwins,
+         cDwins,
+         HybridScore,
+         Hrank,
+         Hwins,
+         cHwins,) %>% 
+  kable("html") %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "100%")
+```
+
