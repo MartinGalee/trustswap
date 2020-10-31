@@ -18,7 +18,7 @@ options(scipen = 999)
 
 # Description of method
 
-The script pulls `DASH`, `SwapScore` and wallet `Address` from the googlesheet provided by the Trustswap team. It computes the number of wallets `n` with a DASH of at least 2000 -- the presale criterion for Mobiepay and Aubit -- and adds the following columns to the data table:
+The script pulls `DASH`, `SwapScore` and wallet `Address` from the googlesheet provided by the Trustswap team. It computes the number of wallets `n` with a DASH of at least 2000 AND have a SwapScore. DASH >= 2000 was the the presale criterion for Mobiepay and Aubit. The following columns are added to the data table:
 
   + `Srank`: SwapScore ranking (wallet `Address` is sorted by this variable).
   + `Swins`: The expected tickets for the wallet that selected in the allocation mining procedure = winning tickets. Assumptions: Allocation mining procedure used in the selection of the Aubit golden tickets, number of tickets selected is `n`, each wallet receives entry tickets equal to `SwapScore` and all entry tickets are used in the presale.
@@ -43,27 +43,30 @@ DASH_data <- gsheet2tbl(DASH_url)
 SwapScore_url <- "https://docs.google.com/spreadsheets/d/1omcvXGOg9NhN-MxiyIhacsq8u8Vw4Wou8Q8CsJ1pXho/edit#gid=1846578663"
 SwapScore_data <- gsheet2tbl(SwapScore_url)
 
-# number of with a DASH equal or greater than 2000 
-n = sum(DASH_data$DASH >= 2000)
-
-# Join SwapScore and Dash data
-# Arrange row form high to low SwapScore
-# Add ranking columns
-# Add (expected) wins if launchpad slots = 1000
-# Add cumulative wins for SwapScore = cumSwapScore_wins
-
-slots = n
+# Join SwapScore and Dash data (exclude wallets that do not have a SwapScore)
+# HybridScore
 data <-
   SwapScore_data %>% 
   inner_join(DASH_data, by = "Address") %>% 
-  mutate(HybridScore = SwapScore * DASH) %>% 
+  mutate(HybridScore = SwapScore * DASH)
+
+# Number of wallets with a DASH equal or greater than 2000 
+n = sum(data$DASH >= 2000)
+
+# Add HybridScore
+# Arrange row from high to low SwapScore
+# Add ranking columns
+# Add (expected) wins if launchpad slots = 1000
+# Add cumulative wins for SwapScore = cumSwapScore_wins
+slots = n
+data <- data %>% 
   arrange(-SwapScore) %>% 
   mutate(Srank = rank(-SwapScore),
          Drank = rank(-DASH),
          Hrank = rank(-HybridScore)) %>% 
-  mutate(Swins = as.numeric(SwapScore / sum(SwapScore) * slots),
-         Dwins = as.numeric(Drank <= slots),
-         Hwins = as.numeric(HybridScore / sum(HybridScore) * slots)) %>% 
+  mutate(Swins = SwapScore / sum(SwapScore) * slots,
+         Dwins = as.numeric(DASH >= 2000),
+         Hwins = HybridScore / sum(HybridScore) * slots) %>% 
   mutate(cSwins =cumsum(Swins),
          cDwins =cumsum(Dwins),
          cHwins =cumsum(Hwins))
