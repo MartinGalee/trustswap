@@ -16,23 +16,23 @@ options(digits = 3)
 options(scipen = 999)
 ```
 
-# SwapScore vs DASH vs HybridScore
+# Description of method
 
-The script gets `DASH`, `SwapScore` and wallet `Address` from the googlesheet. It adds colums:
+The script pulls `DASH`, `SwapScore` and wallet `Address` from the googlesheet provided by the Trustswap team. It computes the number of wallets `n` with a DASH of at least 2000 -- the presale criterion for Mobiepay and Aubit -- and adds the following columns to the data table:
 
   + `Srank`: SwapScore ranking (wallet `Address` is sorted by this variable).
-    
-  + `Swins`: The expected winning tickets one would receive if the total number of   launchpad slots in a NFT system based on `SwapScore` would be 1000 (one launchpad slot = one winning ticket).
+  + `Swins`: The expected tickets for the wallet that selected in the allocation mining procedure = winning tickets. Assumptions: Allocation mining procedure used in the selection of the Aubit golden tickets, number of tickets selected is `n`, each wallet receives entry tickets equal to `SwapScore` and all entry tickets are used in the presale.
   + `cSwins`: The cumulative sum of `Swins`.
   
   + `Drank`: DASH ranking.
-  + `Dwins`: The right to participate in the launchpad (coded as 1, otherwise 0) if you are one of the top 1000 DASH holders (equivalent to receiving one winning ticket in a NFT system). 
+  + `Dwins`: Access to participate in the presale coded as 1, otherwise 0. The number is comparable to the expected number of selected entry tickets by the allocation mining procedure.
   
-  + `HybridScore`: A hybrid score computed as `SwapScore * DASH`.
+  + `HybridScore`: A hybrid score computed as `SwapScore * DASH` proposed by the Trustswap community members.
   + `Hrank`: HybridScore ranking.
-  + `Hwins`: The expected winning tickets one would receive if the total number of   launchpad slots in a NFT system based on `HybridScore` would be 1000 (one launchpad slot = one winning ticket).
+  + `Hwins`: The expected winning tickets. Same assumptions as `Swins` but number of entry tickets of wallet = `HybridScore`.
   + `cHwins`: The cumulative sum of `Hwins`.
-
+  
+# Code
 
 ```{r message=FALSE, warning=FALSE}
 # Get DASH data from google sheet
@@ -43,56 +43,15 @@ DASH_data <- gsheet2tbl(DASH_url)
 SwapScore_url <- "https://docs.google.com/spreadsheets/d/1omcvXGOg9NhN-MxiyIhacsq8u8Vw4Wou8Q8CsJ1pXho/edit#gid=1846578663"
 SwapScore_data <- gsheet2tbl(SwapScore_url)
 
+# number of with a DASH equal or greater than 2000 
+n = sum(DASH_data$DASH >= 2000)
+
 # Join SwapScore and Dash data
 # Arrange row form high to low SwapScore
 # Add ranking columns
 # Add (expected) wins if launchpad slots = 1000
 # Add cumulative wins for SwapScore = cumSwapScore_wins
-slots = 1000
-data <-
-  SwapScore_data %>% 
-  inner_join(DASH_data, by = "Address") %>% 
-  mutate(HybridScore = SwapScore * DASH) %>% 
-  arrange(-SwapScore) %>% 
-  mutate(Srank = rank(-SwapScore),
-         Drank = rank(-DASH),
-         Hrank = rank(-HybridScore)) %>% 
-  mutate(Swins = as.numeric(SwapScore / sum(SwapScore) * slots),
-         Dwins = as.numeric(Drank <= slots),
-         Hwins = as.numeric(HybridScore / sum(HybridScore) * slots)) %>% 
-  mutate(cSwins =cumsum(Swins),
-         cDwins =cumsum(Dwins),
-         cHwins =cumsum(Hwins))
 
-# Show data in a table
-data %>% 
-  select(Address, 
-         SwapScore,
-         Srank,
-         Swins,
-         cSwins,
-         DASH,
-         Drank, 
-         Dwins,
-         cDwins,
-         HybridScore,
-         Hrank,
-         Hwins,
-         cHwins,) %>% 
-  kable("html") %>% 
-  kable_styling("striped") %>% 
-  scroll_box(width = "100%")
-```
-
-## What happens if a DASH = 2000 would be sufficient to KYC for a launchpad project?
-
-```{r}
-# number of with a DASH equal or greater than 2000 
-n = sum(data$DASH >= 2000)
-cat("Number of people with a DASH of at least 2000: ", n)
-```
-
-```{r echo=FALSE}
 slots = n
 data <-
   SwapScore_data %>% 
@@ -108,9 +67,20 @@ data <-
   mutate(cSwins =cumsum(Swins),
          cDwins =cumsum(Dwins),
          cHwins =cumsum(Hwins))
+```
 
-# Show data in a table
+# Comparison of results for selected wallets
+
+```{r}
+cat("Number of people with a DASH of at least 2000: ", n)
+```
+
+```{r}
+SwapScoreRank <- c(1, 10, 25, 50, 100, 150, 200, 250, 375, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500)
+  
+# Show data in a table with scroll functionality
 data %>% 
+  slice(SwapScoreRank) %>% 
   select(Address, 
          SwapScore,
          Srank,
@@ -129,3 +99,26 @@ data %>%
   scroll_box(width = "100%")
 ```
 
+
+# Results for all wallets
+
+```{r}
+# Show full data in a table with scroll functionality
+data %>% 
+  select(Address, 
+         SwapScore,
+         Srank,
+         Swins,
+         cSwins,
+         DASH,
+         Drank, 
+         Dwins,
+         cDwins,
+         HybridScore,
+         Hrank,
+         Hwins,
+         cHwins,) %>% 
+  kable("html") %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "100%")
+```
