@@ -19,15 +19,19 @@ options(scipen = 999)
 # SwapScore vs DASH vs HybridScore
 
 The script gets `DASH`, `SwapScore` and wallet `Address` from the googlesheet. It adds colums:
-    + `Srank`: SwapScore ranking (wallet `Address` is sorted by this variable).
-    + `Swins`: The expected winning tickets one would receive if the total number of   launchpad slots in a NFT system based on `SwapScore` would be 1000 (one launchpad slot = one winning ticket).
-    + `cSwins`: The cumulative sum of `Swins`.
-    + `Drank`: DASH ranking.
-    + `Dwins`: The right to participate in the launchpad (coded as 1, otherwise 0) if you are one of the top 1000 DASH holders (equivalent to receiving one winning ticket in a NFT system). 
-    + `HybridScore`: A hybrid score computed as `SwapScore * DASH`.
-    + `Hrank`: HybridScore ranking.
-    + `Hwins`: The expected winning tickets one would receive if the total number of   launchpad slots in a NFT system based on `SwapScore * DASH` would be 1000 (one launchpad slot = one winning ticket).
-    + `cHwins`: The cumulative sum of `Hwins`.
+
+  + `Srank`: SwapScore ranking (wallet `Address` is sorted by this variable).
+    
+  + `Swins`: The expected winning tickets one would receive if the total number of   launchpad slots in a NFT system based on `SwapScore` would be 1000 (one launchpad slot = one winning ticket).
+  + `cSwins`: The cumulative sum of `Swins`.
+  
+  + `Drank`: DASH ranking.
+  + `Dwins`: The right to participate in the launchpad (coded as 1, otherwise 0) if you are one of the top 1000 DASH holders (equivalent to receiving one winning ticket in a NFT system). 
+  
+  + `HybridScore`: A hybrid score computed as `SwapScore * DASH`.
+  + `Hrank`: HybridScore ranking.
+  + `Hwins`: The expected winning tickets one would receive if the total number of   launchpad slots in a NFT system based on `HybridScore` would be 1000 (one launchpad slot = one winning ticket).
+  + `cHwins`: The cumulative sum of `Hwins`.
 
 
 ```{r message=FALSE, warning=FALSE}

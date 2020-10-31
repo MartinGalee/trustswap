@@ -604,7 +604,18 @@ $(document).ready(function () {
 
 <div id="swapscore-vs-dash-vs-hybridscore" class="section level1">
 <h1>SwapScore vs DASH vs HybridScore</h1>
-<p>The script gets <code>DASH</code>, <code>SwapScore</code> and wallet <code>Address</code> from the googlesheet. It adds colums: + <code>Srank</code>: SwapScore ranking (wallet <code>Address</code> is sorted by this variable). + <code>Swins</code>: The expected winning tickets one would receive if the total number of launchpad slots in a NFT system based on <code>SwapScore</code> would be 1000 (one launchpad slot = one winning ticket). + <code>cSwins</code>: The cumulative sum of <code>Swins</code>. + <code>Drank</code>: DASH ranking. + <code>Dwins</code>: The right to participate in the launchpad (coded as 1, otherwise 0) if you are one of the top 1000 DASH holders (equivalent to receiving one winning ticket in a NFT system). + <code>HybridScore</code>: A hybrid score computed as <code>SwapScore * DASH</code>. + <code>Hrank</code>: HybridScore ranking. + <code>Hwins</code>: The expected winning tickets one would receive if the total number of launchpad slots in a NFT system based on <code>SwapScore * DASH</code> would be 1000 (one launchpad slot = one winning ticket). + <code>cHwins</code>: The cumulative sum of <code>Hwins</code>.</p>
+<p>The script gets <code>DASH</code>, <code>SwapScore</code> and wallet <code>Address</code> from the googlesheet. It adds colums:</p>
+<ul>
+<li><p><code>Srank</code>: SwapScore ranking (wallet <code>Address</code> is sorted by this variable).</p></li>
+<li><code>Swins</code>: The expected winning tickets one would receive if the total number of launchpad slots in a NFT system based on <code>SwapScore</code> would be 1000 (one launchpad slot = one winning ticket).</li>
+<li><p><code>cSwins</code>: The cumulative sum of <code>Swins</code>.</p></li>
+<li><code>Drank</code>: DASH ranking.</li>
+<li><p><code>Dwins</code>: The right to participate in the launchpad (coded as 1, otherwise 0) if you are one of the top 1000 DASH holders (equivalent to receiving one winning ticket in a NFT system).</p></li>
+<li><code>HybridScore</code>: A hybrid score computed as <code>SwapScore * DASH</code>.</li>
+<li><code>Hrank</code>: HybridScore ranking.</li>
+<li><code>Hwins</code>: The expected winning tickets one would receive if the total number of launchpad slots in a NFT system based on <code>HybridScore</code> would be 1000 (one launchpad slot = one winning ticket).</li>
+<li><p><code>cHwins</code>: The cumulative sum of <code>Hwins</code>.</p></li>
+</ul>
 <pre class="r"><code># Get DASH data from google sheet
 DASH_url &lt;- &quot;https://docs.google.com/spreadsheets/d/1omcvXGOg9NhN-MxiyIhacsq8u8Vw4Wou8Q8CsJ1pXho/edit#gid=513362759&quot;
 DASH_data &lt;- gsheet2tbl(DASH_url)
