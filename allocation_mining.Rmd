@@ -1,0 +1,99 @@
+---
+title: 'Launchpad'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Load packages for data analysis
+# install.packages("gsheet")
+# install.packages("tidyverse")
+# install.packages("kableExtra")
+library(gsheet)
+library(tidyverse)
+library(kableExtra)
+options(digits = 3)
+options(scipen = 999)
+```
+
+# Get data
+
+```{r message=FALSE, warning=FALSE}
+# Get SwapScore data from google sheet
+url <- "https://docs.google.com/spreadsheets/d/1omcvXGOg9NhN-MxiyIhacsq8u8Vw4Wou8Q8CsJ1pXho/edit#gid=1846578663"
+data <- gsheet2tbl(url)
+```
+
+# Set levels based on quantile percentages
+
+```{r}
+percentages <- c(.995, .99, .98, .97, .96, .95, .9, .85, .8, .75, .7, .65, .6) # changes this for different distributions
+quantile(x = data$SwapScore, probs = percentages)
+```
+
+# Compare SwapScore to Level
+
+```{r message=FALSE, warning=FALSE}
+# Number of entry tickets that will be selected by allocation mining procedure
+n = 1000
+
+# Calculate quantiles for level mapping
+quant <- quantile(x = data$SwapScore, probs = percentages)
+
+# Number of entry tickets in level 1
+x = 3
+
+# Arrange row from high to low SwapScore
+# Add ranking columns
+# Add (expected) wins if n = 1000
+# Add cumulative wins
+data <- data %>% 
+  arrange(-SwapScore) %>% 
+  mutate(SwapScoreWins = SwapScore / sum(SwapScore) * n,
+         Level = ifelse(SwapScore >= quant[2], 12,
+                        ifelse(SwapScore > quant[3], 11,
+                        ifelse(SwapScore > quant[4], 10,
+                        ifelse(SwapScore > quant[5], 9,
+                        ifelse(SwapScore > quant[6], 8,
+                        ifelse(SwapScore > quant[7], 7,
+                        ifelse(SwapScore > quant[8], 6,
+                        ifelse(SwapScore > quant[9], 5,
+                        ifelse(SwapScore > quant[10], 4,
+                        ifelse(SwapScore > quant[11], 3,
+                        ifelse(SwapScore > quant[12], 2,
+                        ifelse(SwapScore > quant[13], 1,0)))))))))))),
+         LevelWins = Level / sum(Level) * n  )
+
+SwapScoreRank <- nrow(data) * percentages
+  
+# Show selected data in a table with scroll functionality
+data %>% 
+  arrange(SwapScore) %>%
+  slice(c(nrow(data), SwapScoreRank)) %>% 
+  arrange(-SwapScore) %>%
+  select(Address, 
+         SwapScore,
+         SwapScoreWins,
+         Level,
+         LevelWins) %>% 
+  kable("html") %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "100%")
+```
+
+# Full data
+
+```{r}
+# Show full data in a table with scroll functionality
+data %>% 
+  arrange(-SwapScore) %>%
+  select(Address, 
+         SwapScore,
+         SwapScoreWins,
+         Level,
+         LevelWins) %>% 
+  kable("html") %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "100%")
+```
+
